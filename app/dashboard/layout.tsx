@@ -99,7 +99,8 @@ export default function DashboardLayout({
         <div className="flex-1"></div>
       </header>
       <div className="grid flex-1 md:grid-cols-[220px_1fr]">
-        <aside className="hidden border-r bg-muted/40 md:block">
+      <aside className="hidden md:block border-r bg-muted/40">
+
           <nav className="grid gap-2 p-4 text-sm">
             <div className="py-2">
               <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
