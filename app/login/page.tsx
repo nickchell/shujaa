@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
-import { redirect } from 'next/navigation';
-import { useSearchParams } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { redirect, useSearchParams } from 'next/navigation';
+import { useAuth, SignInButton } from '@clerk/nextjs';
+import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
+
 import LoginForm from '@/components/auth/login-form';
 import RegisterForm from '@/components/auth/register-form';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -19,10 +22,6 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
-import { SignInButton } from '@clerk/nextjs';
-import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -101,7 +100,7 @@ export default function LoginPage() {
                 {OAuthSection}
               </CardContent>
               <div className="px-6 pb-4 text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
+                Don&apos;t have an account?{' '}
                 <Link href="/login?tab=register" className="text-primary hover:underline" scroll={false}>
                   Register now
                 </Link>
@@ -124,7 +123,7 @@ export default function LoginPage() {
                 {OAuthSection}
               </CardContent>
               <div className="px-6 pb-4 text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
+                Already have an account?{' '}
                 <Link href="/login?tab=login" className="text-primary hover:underline" scroll={false}>
                   Sign in
                 </Link>
@@ -134,11 +133,11 @@ export default function LoginPage() {
         </Tabs>
 
         <div className="text-center mt-6 text-sm text-muted-foreground">
-          By continuing, you agree to our{" "}
+          By continuing, you agree to our{' '}
           <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
             Terms of Service
-          </Link>{" "}
-          and{" "}
+          </Link>{' '}
+          and{' '}
           <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
             Privacy Policy
           </Link>
