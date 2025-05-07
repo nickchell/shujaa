@@ -25,84 +25,50 @@ const formSchema = z.object({
   }).max(13, {
     message: "Phone number must not be longer than 13 characters.",
   }),
-  otp: z.string().length(6, {
-    message: "OTP must be 6 digits.",
-  }).optional(),
 });
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const [showOTP, setShowOTP] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  
   const { signIn } = useSignIn();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       phoneNumber: "",
-      otp: "",
     },
   });
 
-  async function onSendOTP(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-
-    try {
-      if (signIn) {
-        const res = await signIn.create({
-          identifier: values.phoneNumber,
-          strategy: 'phone_code', // Changed from 'phone_number' to 'phone_code'
-        });
-
-        // Check the status to proceed with OTP verification
-        if (res.status === 'needs_second_factor') { // Changed from 'requires_second_factor'
-          setShowOTP(true);
-          toast({
-            title: "OTP Sent",
-            description: "We've sent a verification code to your phone number.",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "Something went wrong. Please try again.",
-          });
-        }
-      }
-    } catch (error: any) {
+  // Function to handle Google sign-in (Clerk Sign-In)
+  async function onGoogleSignIn() {
+    if (!signIn) {
       toast({
         title: "Error",
-        description: "Failed to send OTP. Please try again.",
+        description: "Sign-in service is unavailable.",
       });
-    } finally {
-      setIsLoading(false);
+      return;
     }
-  }
 
-  async function onVerifyOTP(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
     try {
-      if (signIn) {
-        const res = await signIn.attemptFirstFactor({
-          strategy: 'phone_code', // Changed from 'phone_number'
-          code: values.otp!, // Using non-null assertion since we know otp exists here
-        });
+      const res = await signIn.create({
+        strategy: 'oauth_google', // Use Google OAuth for sign-in
+        redirectUrl: window.location.origin, // Ensure to provide the redirect URL
+      });
 
-        // Check the authentication status
-        if (res.status === 'complete') { // Changed from 'authenticated'
-          toast({
-            title: "Login Successful",
-            description: "Welcome back to Rafiki Rewards!",
-          });
-          router.push('/dashboard');
-        } else {
-          toast({
-            title: "Error",
-            description: "Invalid OTP. Please try again.",
-          });
-        }
+      if (res.status === 'complete') {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back to Rafiki Rewards!",
+        });
+        router.push('/dashboard');
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to sign in with Google. Please try again.",
+        });
       }
     } catch (error: any) {
       toast({
@@ -116,7 +82,7 @@ export default function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(showOTP ? onVerifyOTP : onSendOTP)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onGoogleSignIn)} className="space-y-4">
         <FormField
           control={form.control}
           name="phoneNumber"
@@ -127,7 +93,7 @@ export default function LoginForm() {
                 <Input 
                   placeholder="e.g., 07XXXXXXXX" 
                   {...field} 
-                  disabled={showOTP || isLoading}
+                  disabled={isLoading}
                 />
               </FormControl>
               <FormMessage />
@@ -135,46 +101,10 @@ export default function LoginForm() {
           )}
         />
         
-        {showOTP && (
-          <FormField
-            control={form.control}
-            name="otp"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Verification Code</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="Enter 6-digit code" 
-                    {...field} 
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {!showOTP ? "Send Verification Code" : "Verify & Login"}
+          Sign in with Google
         </Button>
-        
-        {showOTP && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="w-full"
-            disabled={isLoading}
-            onClick={() => {
-              setShowOTP(false);
-              form.resetField("otp");
-            }}
-          >
-            Change Phone Number
-          </Button>
-        )}
       </form>
     </Form>
   );

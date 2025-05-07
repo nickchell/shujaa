@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
-import { Suspense } from 'react';
 import { SignInButton } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 
