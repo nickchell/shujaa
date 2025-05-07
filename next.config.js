@@ -1,26 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  images: { unoptimized: true },
-  
-  // Enable server actions
   experimental: {
-   
-    serverActions: true, // Enable Server Actions
+    serverActions: {} // not `true`
   },
-  
-  // Clerk middleware matcher (optional if you need finer control over which routes are protected)
-  matcher: [
-    /*
-     * Match all routes except:
-     * - static files
-     * - publicRoutes defined in middleware.ts
-     */
-    "/((?!.*\\..*|_next|favicon.ico|login|signup|about|api/webhook).*)",
-  ],
 };
 
 module.exports = nextConfig;
