@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +15,7 @@ interface Task {
   description: string;
   reward: string;
   status: 'completed' | 'available' | 'locked';
-  icon: LucideIcon;
+  icon: typeof LucideIcon;  // Update this line to use 'typeof LucideIcon'
   category: 'daily' | 'weekly' | 'special';
   timeLeft?: string;
   progress?: number;
@@ -23,7 +23,7 @@ interface Task {
 
 export default function TasksPage() {
   const { toast } = useToast();
-  
+
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: '1',
@@ -156,7 +156,7 @@ export default function TasksPage() {
           Complete tasks to earn rewards and level up.
         </p>
       </div>
-      
+
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h3 className="text-2xl font-semibold">Your Progress</h3>
@@ -167,7 +167,7 @@ export default function TasksPage() {
           <p className="text-xs text-muted-foreground">250 XP to Level 3</p>
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span>Level Progress</span>
@@ -175,14 +175,14 @@ export default function TasksPage() {
         </div>
         <Progress value={45} className="h-2" />
       </div>
-      
+
       <Tabs defaultValue="daily" className="space-y-4">
         <TabsList>
           <TabsTrigger value="daily">Daily Tasks</TabsTrigger>
           <TabsTrigger value="weekly">Weekly Tasks</TabsTrigger>
           <TabsTrigger value="special">Special Tasks</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="daily" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             {dailyTasks.map((task) => (
@@ -221,7 +221,7 @@ export default function TasksPage() {
             ))}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="weekly" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             {weeklyTasks.map((task) => (
@@ -269,7 +269,7 @@ export default function TasksPage() {
             ))}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="special" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             {specialTasks.map((task) => (

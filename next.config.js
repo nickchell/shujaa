@@ -8,7 +8,7 @@ const nextConfig = {
   
   // Enable server actions
   experimental: {
-    appDir: true,
+   
     serverActions: true, // Enable Server Actions
   },
   
