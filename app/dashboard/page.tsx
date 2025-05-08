@@ -130,7 +130,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Shujaa Rank</CardTitle>
+            <CardTitle className="text-sm font-medium">Rafiki Rank</CardTitle>
             <Star className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
