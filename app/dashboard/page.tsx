@@ -1,3 +1,7 @@
+'use client';
+
+import { useUser } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -8,25 +12,61 @@ import { DashboardRecentActivity } from '@/components/dashboard/recent-activity'
 import { DashboardChart } from '@/components/dashboard/dashboard-chart';
 
 export default function DashboardPage() {
-  // This would come from your user context/state in a real app
+  const { user } = useUser();
+  
+  const [greetingMessage, setGreetingMessage] = useState('');
+  
+  // Function to get the greeting message and emoji based on the time of day
+  const getGreetingMessage = () => {
+    const hour = new Date().getHours();
+    let greeting = '';
+    let emojis = [];
+
+    if (hour < 12) {
+      greeting = 'Good morning';
+      emojis = ['☀️', '☀️', '☕']; // Morning emojis
+    } else if (hour < 18) {
+      greeting = 'Good afternoon';
+      emojis = ['🌟', '🚀', '💼']; // Afternoon emojis
+    } else {
+      greeting = 'Good evening';
+      emojis = ['🌙', '🌙', '🌙']; // Evening emojis
+    }
+
+    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+    const userName = user?.firstName || 'User'; // Use first name or fallback to 'User'
+    return `${greeting}, ${userName}! ${randomEmoji}`;
+  };
+
+  useEffect(() => {
+    setGreetingMessage(getGreetingMessage());
+  }, [user]);
+
+  const firstNameRaw =
+    user?.firstName ||
+    user?.emailAddresses?.[0]?.emailAddress.split('@')[0].split('.')[0] ||
+    'User';
+
+  const firstName = firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1);
+
   const userProfile = {
-    name: "John",
-    shujaaType: "Hustler",
+    name: firstName,
+    shujaaType: 'Hustler',
     level: 2,
     xp: 450,
     nextLevelXp: 1000,
     dailyStreak: 5,
-    primaryGoal: "data",
+    primaryGoal: 'data',
   };
 
   const progress = (userProfile.xp / userProfile.nextLevelXp) * 100;
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            Welcome back, {userProfile.name} the {userProfile.shujaaType}!
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            {greetingMessage}
           </h2>
           <p className="text-muted-foreground">
             Keep hustling! You're on a {userProfile.dailyStreak}-day streak 🔥
@@ -42,7 +82,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span>Progress to Level {userProfile.level + 1}</span>
@@ -53,8 +93,8 @@ export default function DashboardPage() {
           {userProfile.nextLevelXp - userProfile.xp} XP needed
         </p>
       </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
@@ -65,7 +105,7 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground">+20% from last month</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Referrals</CardTitle>
@@ -76,7 +116,7 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground">+2 new this week</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Tasks Completed</CardTitle>
@@ -87,7 +127,7 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground">5 pending today</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Shujaa Rank</CardTitle>
@@ -99,9 +139,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
           <CardHeader>
             <CardTitle>Earnings Overview</CardTitle>
             <CardDescription>
@@ -112,140 +152,13 @@ export default function DashboardPage() {
             <DashboardChart />
           </CardContent>
         </Card>
-        
-        <Card className="col-span-3">
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Your recent rewards and referrals
-            </CardDescription>
+            <CardDescription>Your recent rewards and referrals</CardDescription>
           </CardHeader>
           <CardContent>
             <DashboardRecentActivity />
-          </CardContent>
-        </Card>
-      </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Personalized Quick Actions */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Recommended tasks for {userProfile.shujaaType}s
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button className="w-full" variant="default">
-              <Eye className="mr-2 h-4 w-4" />
-              Watch Daily Ad (+5MB)
-            </Button>
-            <Button className="w-full" variant="outline">
-              <Share2 className="mr-2 h-4 w-4" />
-              Share Your Progress
-            </Button>
-            <Button className="w-full" variant="outline">
-              <Users className="mr-2 h-4 w-4" />
-              Invite Friends
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Daily Tasks Progress */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Today's Tasks</CardTitle>
-            <CardDescription>
-              3 of 5 tasks completed today
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  <span>Watch 2 Ads</span>
-                </div>
-                <span className="text-primary">Completed</span>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  <span>Refer A Friend</span>
-                </div>
-                <span className="text-primary">Completed</span>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  <span>Daily Check-In</span>
-                </div>
-                <span className="text-primary">Completed</span>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>Complete Survey</span>
-                </div>
-                <span className="text-muted-foreground">Pending</span>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span>Visit Partner Website</span>
-                </div>
-                <span className="text-muted-foreground">Pending</span>
-              </div>
-            </div>
-            
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span>Progress</span>
-                <span>60%</span>
-              </div>
-              <Progress value={60} />
-            </div>
-            
-            <Button asChild className="w-full">
-              <Link href="/dashboard/tasks">View All Tasks</Link>
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Next Reward Card */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Next Milestone</CardTitle>
-            <CardDescription>
-              You're close to your next reward!
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border bg-card p-4 text-center">
-              <div className="mb-2">
-                <Gift className="mx-auto h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold">100MB Data Bundle</h3>
-              <p className="text-sm text-muted-foreground">
-                Complete 2 more tasks to claim
-              </p>
-            </div>
-            
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span>Progress</span>
-                <span>80%</span>
-              </div>
-              <Progress value={80} />
-            </div>
-            
-            <Button asChild className="w-full">
-              <Link href="/dashboard/rewards">View All Rewards</Link>
-            </Button>
           </CardContent>
         </Card>
       </div>

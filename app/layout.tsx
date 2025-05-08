@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
-import { ClerkProvider } from '@clerk/nextjs';  // Import ClerkProvider
+import { ClerkProvider } from '@clerk/nextjs'; // Import ClerkProvider
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ClerkProvider>
+        <ClerkProvider> {/* Wrapping the app with ClerkProvider */}
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
@@ -35,7 +35,7 @@ export default function RootLayout({
             </div>
             <Toaster />
           </ThemeProvider>
-        </ClerkProvider>
+        </ClerkProvider> {/* ClerkProvider wraps the entire app */}
       </body>
     </html>
   );

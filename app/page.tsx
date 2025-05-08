@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,11 +16,17 @@ import {
 import HeroSection from '@/components/home/hero-section';
 import StatsSection from '@/components/home/stats-section';
 import TestimonialsSection from '@/components/home/testimonials-section';
-
-import { useUser } from '@clerk/nextjs'; // ✅ Clerk hook
+import { useUser } from '@clerk/nextjs';
 
 export default function Home() {
-  const { isSignedIn, user } = useUser(); // ✅ Access Clerk user state
+  const { isSignedIn } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push('/dashboard');
+    }
+  }, [isSignedIn, router]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -40,7 +48,6 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            {/* Step Cards */}
             {[{
               icon: Share2,
               title: '1. Invite Friends',
@@ -141,11 +148,9 @@ export default function Home() {
             </div>
             <div className="space-x-4">
               {isSignedIn ? (
-                <>
-                  <Button asChild size="lg">
-                    <Link href="/dashboard">Go to Dashboard</Link>
-                  </Button>
-                </>
+                <Button asChild size="lg">
+                  <Link href="/dashboard">Go to Dashboard</Link>
+                </Button>
               ) : (
                 <>
                   <Button asChild size="lg">
