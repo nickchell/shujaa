@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -17,44 +17,6 @@ import {
   Settings,
   Menu,
 } from 'lucide-react';
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: Home,
-  },
-  {
-    title: "Tasks",
-    href: "/dashboard/tasks",
-    icon: Inbox,
-  },
-  {
-    title: "Referrals",
-    href: "/dashboard/referrals",
-    icon: Share2,
-  },
-  {
-    title: "Rewards",
-    href: "/dashboard/rewards",
-    icon: Gift,
-  },
-  {
-    title: "Leaderboard",
-    href: "/dashboard/leaderboard",
-    icon: BarChart2,
-  },
-  {
-    title: "Profile",
-    href: "/dashboard/profile",
-    icon: Users,
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
-];
 
 export default function DashboardLayout({
   children,
@@ -76,59 +38,176 @@ export default function DashboardLayout({
           </SheetTrigger>
           <SheetContent side="left" className="flex flex-col">
             <nav className="grid gap-2 text-lg font-medium">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary",
-                    pathname === item.href && "bg-muted font-medium text-primary"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.title}
-                </Link>
-              ))}
+              <Link
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary",
+                  pathname === "/dashboard" && "bg-muted font-medium text-primary"
+                )}
+              >
+                <Home className="h-5 w-5" />
+                Home
+              </Link>
+              <Link
+                href="/dashboard/tasks"
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary",
+                  pathname === "/dashboard/tasks" && "bg-muted font-medium text-primary"
+                )}
+              >
+                <Inbox className="h-5 w-5" />
+                Tasks
+              </Link>
+              <Link
+                href="/dashboard/referrals"
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary",
+                  pathname === "/dashboard/referrals" && "bg-muted font-medium text-primary"
+                )}
+              >
+                <Share2 className="h-5 w-5" />
+                Referrals
+              </Link>
+              <Link
+                href="/dashboard/rewards"
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary",
+                  pathname === "/dashboard/rewards" && "bg-muted font-medium text-primary"
+                )}
+              >
+                <Gift className="h-5 w-5" />
+                Rewards
+              </Link>
+              <Link
+                href="/dashboard/leaderboard"
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary",
+                  pathname === "/dashboard/leaderboard" && "bg-muted font-medium text-primary"
+                )}
+              >
+                <BarChart2 className="h-5 w-5" />
+                Leaderboard
+              </Link>
+              <Link
+                href="/dashboard/profile"
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary",
+                  pathname === "/dashboard/profile" && "bg-muted font-medium text-primary"
+                )}
+              >
+                <Users className="h-5 w-5" />
+                Profile
+              </Link>
+              <Link
+                href="/dashboard/settings"
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary",
+                  pathname === "/dashboard/settings" && "bg-muted font-medium text-primary"
+                )}
+              >
+                <Settings className="h-5 w-5" />
+                Settings
+              </Link>
             </nav>
           </SheetContent>
         </Sheet>
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <div className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-green-600">Rafiki Rewards</div>
+          <div className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-green-600">
+            Karibu Rafiki!
+          </div>
         </Link>
         <div className="flex-1"></div>
       </header>
       <div className="grid flex-1 md:grid-cols-[220px_1fr]">
-      <aside className="hidden md:block border-r bg-muted/40">
-
+        <aside className="hidden md:block border-r bg-muted/40">
           <nav className="grid gap-2 p-4 text-sm">
             <div className="py-2">
-              <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
-                Menu
-              </h2>
+              <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">Menu</h2>
               <div className="space-y-1">
-                {navItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary transition-colors",
-                      pathname === item.href && "bg-muted font-medium text-primary"
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.title}
-                  </Link>
-                ))}
+                <Link
+                  href="/dashboard"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary transition-colors",
+                    pathname === "/dashboard" && "bg-muted font-medium text-primary"
+                  )}
+                >
+                  <Home className="h-4 w-4" />
+                  Home
+                </Link>
+                <Link
+                  href="/dashboard/tasks"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary transition-colors",
+                    pathname === "/dashboard/tasks" && "bg-muted font-medium text-primary"
+                  )}
+                >
+                  <Inbox className="h-4 w-4" />
+                  Tasks
+                </Link>
+                <Link
+                  href="/dashboard/referrals"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary transition-colors",
+                    pathname === "/dashboard/referrals" && "bg-muted font-medium text-primary"
+                  )}
+                >
+                  <Share2 className="h-4 w-4" />
+                  Referrals
+                </Link>
+                <Link
+                  href="/dashboard/rewards"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary transition-colors",
+                    pathname === "/dashboard/rewards" && "bg-muted font-medium text-primary"
+                  )}
+                >
+                  <Gift className="h-4 w-4" />
+                  Rewards
+                </Link>
+                <Link
+                  href="/dashboard/leaderboard"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary transition-colors",
+                    pathname === "/dashboard/leaderboard" && "bg-muted font-medium text-primary"
+                  )}
+                >
+                  <BarChart2 className="h-4 w-4" />
+                  Leaderboard
+                </Link>
+                <Link
+                  href="/dashboard/profile"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary transition-colors",
+                    pathname === "/dashboard/profile" && "bg-muted font-medium text-primary"
+                  )}
+                >
+                  <Users className="h-4 w-4" />
+                  Profile
+                </Link>
+                <Link
+                  href="/dashboard/settings"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:text-primary transition-colors",
+                    pathname === "/dashboard/settings" && "bg-muted font-medium text-primary"
+                  )}
+                >
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </Link>
               </div>
             </div>
           </nav>
         </aside>
         <main className="flex flex-col">
           <ScrollArea className="h-full">
-            <div className="flex-1 p-4 md:p-8">
-              {children}
-            </div>
+            <div className="flex-1 p-4 md:p-8">{children}</div>
           </ScrollArea>
         </main>
       </div>

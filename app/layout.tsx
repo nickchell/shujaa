@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
-import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
+import Navbar from '@/components/layout/header'; // Import the Navbar component
 import { ClerkProvider } from '@clerk/nextjs'; // Import ClerkProvider
 
 const inter = Inter({ subsets: ['latin'] });
@@ -29,7 +29,7 @@ export default function RootLayout({
             enableSystem
           >
             <div className="flex min-h-screen flex-col">
-              <Header />
+              <Navbar /> {/* Add Navbar here */}
               <main className="flex-1">{children}</main>
               <Footer />
             </div>

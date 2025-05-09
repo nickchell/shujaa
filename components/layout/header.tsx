@@ -21,10 +21,10 @@ import { useUser, SignOutButton } from '@clerk/nextjs';
 
 const navItems = [
   { name: 'Home', path: '/' },
-  { name: 'Tasks', path: '/tasks' },
-  { name: 'Referrals', path: '/referrals' },
-  { name: 'Leaderboard', path: '/leaderboard' },
-  { name: 'Rewards', path: '/rewards' },
+  { name: 'Tasks', path: '/dashboard/tasks' },
+  { name: 'Referrals', path: '/dashboard/referrals' },
+  { name: 'Leaderboard', path: '/dashboard/leaderboard' },
+  { name: 'Rewards', path: '/dashboard/rewards' },
 ];
 
 export default function Header() {
