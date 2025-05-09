@@ -36,12 +36,7 @@ export default function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
+            
             <SheetContent side="left" className="pr-0">
               <nav className="grid gap-6 text-lg font-medium">
                 {navItems.map((item) => (
