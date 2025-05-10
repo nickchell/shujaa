@@ -1,7 +1,7 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { authMiddleware } from '@clerk/nextjs';
 
 // Define public routes — exact paths only
-const isPublicRoute = createRouteMatcher([
+const publicRoutes = [
   '/', // Home page
   '/about', // About page
   '/login', // Login page
@@ -14,18 +14,11 @@ const isPublicRoute = createRouteMatcher([
   '/_next/image', // Next.js image files
   '/images', // Images folder
   '/assets', // Assets folder
-]);
+];
 
-export default clerkMiddleware(async (auth, req) => {
-  console.log('Middleware processing request:', {
-    path: req.nextUrl.pathname,
-    isPublic: isPublicRoute(req),
-  });
-
-  if (!isPublicRoute(req)) {
-    console.log('Protected route, checking auth');
-    await auth(); // Require auth for protected routes
-  }
+export default authMiddleware({
+  publicRoutes,
+  debug: true,
 });
 
 export const config = {

@@ -79,8 +79,8 @@ export default function LoginPage() {
         
         <SignIn 
           routing="hash" 
-          signInUrl="/login"
-          fallbackRedirectUrl="/dashboard"
+          path="/login"
+          redirectUrl="/dashboard"
           appearance={{
             elements: {
               formButtonPrimary: 
