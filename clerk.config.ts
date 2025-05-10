@@ -9,6 +9,9 @@ export const clerkConfig = {
     afterSignInUrl: "/dashboard",  // Redirect to dashboard after sign-in
     afterSignUpUrl: "/dashboard",  // Redirect to dashboard after sign-up
   
-    // Optionally, specify API keys or any other Clerk settings here
-  };
+    // Session configuration
+    session: {
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+    },
+};
   
