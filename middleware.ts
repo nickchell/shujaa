@@ -24,10 +24,8 @@ const publicRoutes = [
   '/fonts',
 ];
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware((auth, req: NextRequest) => {
   const url = new URL(req.url);
-  const isPublicRoute = publicRoutes.some(route => url.pathname.startsWith(route));
-
   // Capture referral code from URL and store in cookie if present
   const ref = url.searchParams.get('ref');
   if (ref) {
@@ -35,7 +33,6 @@ export default clerkMiddleware((auth, req) => {
     response.cookies.set('referral_code', ref, { path: '/', maxAge: 60 * 60 * 24 * 7 }); // 7 days
     return response;
   }
-
   return NextResponse.next();
 });
 
