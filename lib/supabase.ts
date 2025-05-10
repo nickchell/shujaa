@@ -26,14 +26,15 @@ export const supabase = createClient(
 );
 
 // Test the connection
-supabase.from('tasks').select('count').limit(1)
-  .then(({ data, error }) => {
+(async () => {
+  try {
+    const { data, error } = await supabase.from('tasks').select('count').limit(1);
     if (error) {
       console.error('Supabase connection test failed:', error);
     } else {
       console.log('Supabase connection test successful');
     }
-  })
-  .catch(err => {
+  } catch (err) {
     console.error('Supabase connection test error:', err);
-  });
+  }
+})();

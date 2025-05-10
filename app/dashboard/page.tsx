@@ -40,7 +40,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setGreetingMessage(getGreetingMessage());
-  }, [user]);
+  }, [user, getGreetingMessage]);
 
   const firstNameRaw =
     user?.firstName ||

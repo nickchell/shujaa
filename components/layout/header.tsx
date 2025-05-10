@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -86,9 +87,11 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0 overflow-hidden">
-                  <img
+                  <Image
                     src={user.imageUrl}
                     alt="User avatar"
+                    width={32}
+                    height={32}
                     className="h-full w-full object-cover rounded-full"
                   />
                 </Button>

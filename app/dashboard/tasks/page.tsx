@@ -69,7 +69,7 @@ export default function TasksPage() {
     }
 
     loadTasks();
-  }, [user?.id, isLoaded, toast]);
+  }, [user, isLoaded, toast]);
 
   const handleTaskComplete = async (taskId: string) => {
     try {
