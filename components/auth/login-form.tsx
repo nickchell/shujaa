@@ -69,6 +69,7 @@ export default function LoginForm() {
         await res.prepareFirstFactor({
           strategy: 'oauth_google',
           redirectUrl: `${window.location.origin}/dashboard`,
+          actionCompleteRedirectUrl: `${window.location.origin}/dashboard`,
         });
       } else {
         toast({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const [greetingMessage, setGreetingMessage] = useState('');
   
   // Function to get the greeting message and emoji based on the time of day
-  const getGreetingMessage = () => {
+  const getGreetingMessage = useCallback(() => {
     const hour = new Date().getHours();
     let greeting = '';
     let emojis = [];
@@ -36,11 +36,11 @@ export default function DashboardPage() {
     const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     const userName = user?.firstName || 'User'; // Use first name or fallback to 'User'
     return `${greeting}, ${userName}! ${randomEmoji}`;
-  };
+  }, [user?.firstName]);
 
   useEffect(() => {
     setGreetingMessage(getGreetingMessage());
-  }, [user, getGreetingMessage]);
+  }, [getGreetingMessage]);
 
   const firstNameRaw =
     user?.firstName ||
