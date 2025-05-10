@@ -1,4 +1,4 @@
-import { authMiddleware, type AuthObject } from '@clerk/nextjs';
+import { authMiddleware } from '@clerk/nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -26,7 +26,7 @@ const publicRoutes = [
 
 export default authMiddleware({
   publicRoutes,
-  afterAuth(auth: AuthObject, req: NextRequest) {
+  afterAuth(auth, req: NextRequest) {
     const url = new URL(req.url);
     const isPublicRoute = publicRoutes.some(route => 
       url.pathname.startsWith(route)
@@ -41,7 +41,7 @@ export default authMiddleware({
 
     // If the user is logged in and trying to access a protected route, let them through
     if (auth.userId && !isPublicRoute) {
-      return;
+      return NextResponse.next();
     }
 
     // If the user is logged in and trying to access a public route, redirect to dashboard
