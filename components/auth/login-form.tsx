@@ -54,8 +54,8 @@ export default function LoginForm() {
 
     try {
       const res = await signIn.create({
-        strategy: 'oauth_google', // Use Google OAuth for sign-in
-        redirectUrl: window.location.origin, // Ensure to provide the redirect URL
+        strategy: 'oauth_google',
+        redirectUrl: `${window.location.origin}/dashboard`,
       });
 
       if (res.status === 'complete') {
@@ -64,6 +64,12 @@ export default function LoginForm() {
           description: "Welcome back to Rafiki Rewards!",
         });
         router.push('/dashboard');
+      } else if (res.status === 'needs_first_factor') {
+        // Handle first factor authentication if needed
+        await res.prepareFirstFactor({
+          strategy: 'oauth_google',
+          redirectUrl: `${window.location.origin}/dashboard`,
+        });
       } else {
         toast({
           title: "Error",
@@ -71,9 +77,10 @@ export default function LoginForm() {
         });
       }
     } catch (error: any) {
+      console.error('Sign-in error:', error);
       toast({
         title: "Error",
-        description: "Login failed. Please try again.",
+        description: error.message || "Login failed. Please try again.",
       });
     } finally {
       setIsLoading(false);

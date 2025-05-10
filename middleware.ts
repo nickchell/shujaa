@@ -1,4 +1,5 @@
-import { authMiddleware } from '@clerk/nextjs';
+import { authMiddleware, type AuthObject } from '@clerk/nextjs';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Define public routes — exact paths only
 const publicRoutes = [
@@ -18,6 +19,25 @@ const publicRoutes = [
 
 export default authMiddleware({
   publicRoutes,
+  afterAuth(auth: AuthObject, req: NextRequest) {
+    // Handle users who aren't authenticated
+    if (!auth.userId && !auth.isPublicRoute) {
+      const signInUrl = new URL('/login', req.url);
+      signInUrl.searchParams.set('redirect_url', req.url);
+      return NextResponse.redirect(signInUrl);
+    }
+
+    // If the user is logged in and trying to access a protected route, let them through
+    if (auth.userId && !auth.isPublicRoute) {
+      return;
+    }
+
+    // If the user is logged in and trying to access a public route, redirect to dashboard
+    if (auth.userId && auth.isPublicRoute && req.nextUrl.pathname === '/') {
+      const dashboardUrl = new URL('/dashboard', req.url);
+      return NextResponse.redirect(dashboardUrl);
+    }
+  },
   debug: true,
 });
 

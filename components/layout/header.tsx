@@ -87,13 +87,28 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0 overflow-hidden">
-                  <Image
-                    src={user.imageUrl}
-                    alt="User avatar"
-                    width={32}
-                    height={32}
-                    className="h-full w-full object-cover rounded-full"
-                  />
+                  {user.imageUrl ? (
+                    <Image
+                      src={user.imageUrl}
+                      alt="User avatar"
+                      width={32}
+                      height={32}
+                      className="h-full w-full object-cover rounded-full"
+                      onError={(e) => {
+                        // Fallback to initials if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const initials = document.createElement('div');
+                        initials.className = 'h-full w-full flex items-center justify-center bg-primary/10 text-primary text-sm font-medium';
+                        initials.textContent = user.firstName?.[0] || user.emailAddresses[0]?.emailAddress[0] || 'U';
+                        target.parentNode?.appendChild(initials);
+                      }}
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary text-sm font-medium">
+                      {user.firstName?.[0] || user.emailAddresses[0]?.emailAddress[0] || 'U'}
+                    </div>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
