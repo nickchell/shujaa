@@ -48,6 +48,11 @@ export default function TasksPage() {
   }, [user?.id, isLoaded]);
 
   const handleTaskComplete = async (taskId: string) => {
+    if (!user?.id) {
+      setError('User not authenticated');
+      return;
+    }
+
     try {
       const updatedTask = await markTaskComplete(taskId, user.id);
       setTasks(tasks.map(task => 
