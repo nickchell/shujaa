@@ -10,6 +10,7 @@ import { Gift, Clock, Phone, Smartphone, Wifi, AlertCircle } from 'lucide-react'
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { formatDate } from '@/lib/utils/date';
 
 interface Reward {
   id: string;
@@ -506,7 +507,7 @@ export default function RewardsPage() {
                         <div>
                           <div className="font-medium">{reward.title}</div>
                           <div className="text-sm text-muted-foreground">
-                            Claimed on {new Date(reward.date).toLocaleDateString()}
+                            Claimed on {formatDate(reward.date)}
                           </div>
                         </div>
                       </div>

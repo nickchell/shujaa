@@ -12,6 +12,10 @@ export const clerkConfig = {
     // Session configuration
     session: {
       maxAge: 30 * 24 * 60 * 60, // 30 days
+      tokenRefresh: {
+        enabled: true,
+        interval: 60 * 60, // Refresh token every hour
+      },
     },
 };
   

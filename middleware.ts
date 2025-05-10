@@ -1,4 +1,4 @@
-import { authMiddleware } from '@clerk/nextjs';
+import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -24,34 +24,19 @@ const publicRoutes = [
   '/fonts',
 ];
 
-export default authMiddleware({
-  publicRoutes,
-  afterAuth(auth, req: NextRequest) {
-    const url = new URL(req.url);
-    const isPublicRoute = publicRoutes.some(route => 
-      url.pathname.startsWith(route)
-    );
+export default clerkMiddleware((auth, req) => {
+  const url = new URL(req.url);
+  const isPublicRoute = publicRoutes.some(route => url.pathname.startsWith(route));
 
-    // Handle users who aren't authenticated
-    if (!auth.userId && !isPublicRoute) {
-      const signInUrl = new URL('/login', req.url);
-      signInUrl.searchParams.set('redirect_url', req.url);
-      return NextResponse.redirect(signInUrl);
-    }
+  // Capture referral code from URL and store in cookie if present
+  const ref = url.searchParams.get('ref');
+  if (ref) {
+    const response = NextResponse.next();
+    response.cookies.set('referral_code', ref, { path: '/', maxAge: 60 * 60 * 24 * 7 }); // 7 days
+    return response;
+  }
 
-    // If the user is logged in and trying to access a protected route, let them through
-    if (auth.userId && !isPublicRoute) {
-      return NextResponse.next();
-    }
-
-    // If the user is logged in and trying to access a public route, redirect to dashboard
-    if (auth.userId && url.pathname === '/') {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
-
-    return NextResponse.next();
-  },
-  debug: true,
+  return NextResponse.next();
 });
 
 export const config = {

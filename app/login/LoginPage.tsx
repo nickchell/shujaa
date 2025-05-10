@@ -79,7 +79,6 @@ export default function LoginPage() {
         
         <SignIn 
           routing="hash" 
-          path="/login"
           redirectUrl="/dashboard"
           appearance={{
             elements: {
