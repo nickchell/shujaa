@@ -49,7 +49,7 @@ export default function TasksPage() {
 
   const handleTaskComplete = async (taskId: string) => {
     try {
-      const updatedTask = await markTaskComplete(taskId);
+      const updatedTask = await markTaskComplete(taskId, user.id);
       setTasks(tasks.map(task => 
         task.id === taskId ? updatedTask : task
       ));
