@@ -2,14 +2,11 @@ import { supabase } from '@/lib/supabase';
 import { Task, TaskTemplate } from '@/lib/types/task';
 
 export async function getUserTasks(userId: string): Promise<Task[]> {
-  console.log('Fetching tasks for user:', userId);
-  
   if (!userId) {
     throw new Error('User ID is required');
   }
 
   try {
-    console.log('Querying tasks from database...');
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
@@ -17,40 +14,22 @@ export async function getUserTasks(userId: string): Promise<Task[]> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Supabase error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        userId
-      });
       throw new Error(`Error loading tasks: ${error.message}`);
     }
 
-    console.log('Fetched tasks from database:', data);
-
     // If no tasks found, try to assign new ones
     if (!data || data.length === 0) {
-      console.log('No tasks found, attempting to assign new tasks...');
       const newTasks = await assignTasksToUser(userId);
-      console.log('Newly assigned tasks:', newTasks);
       return newTasks;
     }
 
     return data;
   } catch (error) {
-    console.error('Error in getUserTasks:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      userId,
-      stack: error instanceof Error ? error.stack : undefined
-    });
     throw error;
   }
 }
 
 export async function markTaskComplete(taskId: string, userId: string): Promise<Task> {
-  console.log('Marking task as complete:', { taskId, userId });
-  
   if (!taskId) {
     throw new Error('Task ID is required');
   }
@@ -60,7 +39,6 @@ export async function markTaskComplete(taskId: string, userId: string): Promise<
   }
 
   try {
-    console.log('Calling task completion API...');
     const response = await fetch('/api/tasks/complete', {
       method: 'POST',
       headers: {
@@ -70,36 +48,20 @@ export async function markTaskComplete(taskId: string, userId: string): Promise<
     });
 
     const data = await response.json();
-    console.log('Task completion API response:', data);
 
     if (!response.ok) {
       const errorMessage = data.error || `Failed to complete task (${response.status})`;
-      console.error('Task completion API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: data.error,
-        taskId,
-        userId
-      });
       throw new Error(errorMessage);
     }
 
     if (!data.task) {
       const errorMessage = 'No task data returned from API';
-      console.error(errorMessage, { response: data });
       throw new Error(errorMessage);
     }
 
     return data.task;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    console.error('Error in markTaskComplete:', {
-      error: errorMessage,
-      taskId,
-      userId,
-      stack: error instanceof Error ? error.stack : undefined
-    });
-    throw new Error(errorMessage);
+    throw new Error(error instanceof Error ? error.message : 'Unknown error occurred');
   }
 }
 
@@ -135,8 +97,6 @@ export async function createTaskFromTemplate(
 }
 
 export async function getActiveTaskTemplates(): Promise<TaskTemplate[]> {
-  console.log('Fetching active task templates');
-  
   try {
     const { data, error } = await supabase
       .from('task_templates')
@@ -144,32 +104,21 @@ export async function getActiveTaskTemplates(): Promise<TaskTemplate[]> {
       .eq('is_active', true);
 
     if (error) {
-      console.error('Supabase error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      });
       throw new Error(`Failed to fetch task templates: ${error.message}`);
     }
 
-    console.log('Fetched task templates:', data);
     return data || [];
   } catch (err) {
-    console.error('Error in getActiveTaskTemplates:', err);
     throw err;
   }
 }
 
 export async function assignTasksToUser(userId: string): Promise<Task[]> {
-  console.log('Assigning tasks to user:', userId);
-  
   if (!userId) {
     throw new Error('User ID is required');
   }
 
   try {
-    console.log('Calling task assignment API...');
     const response = await fetch('/api/tasks/assign', {
       method: 'POST',
       headers: {
@@ -180,23 +129,12 @@ export async function assignTasksToUser(userId: string): Promise<Task[]> {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Task assignment API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData
-      });
       throw new Error(errorData.error || 'Failed to assign tasks');
     }
 
     const data = await response.json();
-    console.log('Task assignment API response:', data);
     return data.tasks || [];
   } catch (error) {
-    console.error('Error in assignTasksToUser:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      userId,
-      stack: error instanceof Error ? error.stack : undefined
-    });
     throw error;
   }
 }
@@ -242,7 +180,6 @@ export async function assignNewTasksToAllUsers(): Promise<void> {
       }
     }
   } catch (error) {
-    console.error('Error assigning new tasks to all users:', error);
     throw error;
   }
 }

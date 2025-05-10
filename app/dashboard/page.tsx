@@ -10,11 +10,14 @@ import Link from 'next/link';
 import { Users, Gift, Share2, CheckCircle, TrendingUp, Eye, Clock, RefreshCw, Trophy, Star } from 'lucide-react';
 import { DashboardRecentActivity } from '@/components/dashboard/recent-activity';
 import { DashboardChart } from '@/components/dashboard/dashboard-chart';
+import { getUserTasks } from '@/lib/services/taskService';
 
 export default function DashboardPage() {
   const { user } = useUser();
   
   const [greetingMessage, setGreetingMessage] = useState('');
+  const [completedTasks, setCompletedTasks] = useState<number | null>(null);
+  const [pendingTasks, setPendingTasks] = useState<number | null>(null);
   
   const getGreetingMessage = useCallback(() => {
     const hour = new Date().getHours();
@@ -40,6 +43,21 @@ export default function DashboardPage() {
   useEffect(() => {
     setGreetingMessage(getGreetingMessage());
   }, [getGreetingMessage]);
+
+  useEffect(() => {
+    async function fetchCompletedTasks() {
+      if (!user?.id) return;
+      try {
+        const tasks = await getUserTasks(user.id);
+        setCompletedTasks(tasks.filter(t => t.is_completed).length);
+        setPendingTasks(tasks.filter(t => !t.is_completed).length);
+      } catch (e) {
+        setCompletedTasks(null);
+        setPendingTasks(null);
+      }
+    }
+    fetchCompletedTasks();
+  }, [user?.id]);
 
   const userProfile = useMemo(() => {
     const firstNameRaw =
@@ -127,8 +145,12 @@ export default function DashboardPage() {
             <CheckCircle className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">5 pending today</p>
+            <div className="text-2xl font-bold">
+              {completedTasks !== null ? completedTasks : '...'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {pendingTasks !== null ? `${pendingTasks} pending today` : ''}
+            </p>
           </CardContent>
         </Card>
 

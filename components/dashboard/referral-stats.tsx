@@ -38,11 +38,10 @@ export function ReferralStats() {
   const loadData = async () => {
     try {
       if (!user) return;
-      console.log('Starting to load referral data for user:', user.id);
+
       setIsLoading(true);
 
       // Get referral code
-      console.log('Calling referral code generation API...');
       const response = await fetch('/api/referrals/generate', {
         method: 'POST',
         headers: {
@@ -50,9 +49,7 @@ export function ReferralStats() {
         },
       });
 
-      console.log('API Response status:', response.status);
       const responseText = await response.text();
-      console.log('API Response text:', responseText);
 
       if (!response.ok) {
         throw new Error(`Failed to get referral code: ${responseText}`);
@@ -64,22 +61,16 @@ export function ReferralStats() {
       }
 
       setReferralCode(data.referralCode);
-      console.log('Referral code set:', data.referralCode);
 
       // Get referral stats
-      console.log('Fetching referral stats...');
       const stats = await getReferralStats(user.id);
-      console.log('Received referral stats:', stats);
       setStats(stats);
 
       // Get referral progress
-      console.log('Fetching referral progress...');
       const progress = await getReferralProgress(user.id);
-      console.log('Received referral progress:', progress);
       setProgress(progress);
 
       // Get referrals
-      console.log('Fetching referrals...');
       const referrals = await getReferrals(user.id);
       const mappedReferrals = referrals.map(referral => ({
         ...referral,
@@ -88,7 +79,6 @@ export function ReferralStats() {
       setReferrals(mappedReferrals);
 
     } catch (error) {
-      console.error('Error loading referral data:', error);
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to load referral data',
@@ -106,7 +96,7 @@ export function ReferralStats() {
   if (!user) return null;
 
   const referralLink = referralCode 
-    ? `https://sensitive-trade-murray-hawaiian.trycloudflare.com/welcome?ref=${referralCode}`
+    ? `https://shujaa.vercel.app/welcome?ref=${referralCode}`
     : null;
 
   const copyReferralLink = async () => {
@@ -131,7 +121,6 @@ export function ReferralStats() {
           document.execCommand('copy');
           textArea.remove();
         } catch (err) {
-          console.error('Fallback: Oops, unable to copy', err);
           textArea.remove();
           throw new Error('Failed to copy text');
         }
@@ -148,7 +137,6 @@ export function ReferralStats() {
         setIsCopied(false);
       }, 2000);
     } catch (error) {
-      console.error('Error copying to clipboard:', error);
       toast({
         title: "Error",
         description: "Failed to copy referral link. Please try again.",

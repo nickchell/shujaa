@@ -125,4 +125,22 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_referral_stats
     AFTER INSERT OR UPDATE ON referrals
     FOR EACH ROW
-    EXECUTE FUNCTION update_referral_stats(); 
+    EXECUTE FUNCTION update_referral_stats();
+
+-- Create function to prevent updates to referred_by after user creation
+CREATE OR REPLACE FUNCTION prevent_referred_by_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.referred_by IS NOT NULL AND NEW.referred_by IS DISTINCT FROM OLD.referred_by THEN
+    RAISE EXCEPTION 'referred_by cannot be updated after user creation';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to enforce the rule
+DROP TRIGGER IF EXISTS prevent_referred_by_update ON users;
+CREATE TRIGGER prevent_referred_by_update
+  BEFORE UPDATE ON users
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_referred_by_update(); 

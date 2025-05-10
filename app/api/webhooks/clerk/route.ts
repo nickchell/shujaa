@@ -48,8 +48,6 @@ export async function POST(req: Request) {
     const { id, email_addresses, ...attributes } = evt.data;
     const email = email_addresses?.[0]?.email_address;
 
-    console.log('Processing user creation for:', { id, email });
-
     // Get referral code from URL if present, otherwise check cookies
     const url = new URL(req.url);
     let referralCode = url.searchParams.get('ref');
@@ -59,7 +57,6 @@ export async function POST(req: Request) {
       const refCookie = cookies.find(c => c.startsWith('referral_code='));
       if (refCookie) {
         referralCode = refCookie.split('=')[1];
-        console.log('Referral code from cookie:', referralCode);
       }
     }
     console.log('Referral code from URL:', url.searchParams.get('ref'));
