@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import { Task, TaskTemplate } from '@/lib/types/task';
 
 export async function getUserTasks(userId: string): Promise<Task[]> {
@@ -7,6 +7,7 @@ export async function getUserTasks(userId: string): Promise<Task[]> {
   }
 
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
@@ -69,6 +70,8 @@ export async function createTaskFromTemplate(
   userId: string,
   templateId: string
 ): Promise<Task> {
+  const supabase = createClient();
+  
   // First get the template
   const { data: template, error: templateError } = await supabase
     .from('task_templates')
@@ -98,6 +101,7 @@ export async function createTaskFromTemplate(
 
 export async function getActiveTaskTemplates(): Promise<TaskTemplate[]> {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('task_templates')
       .select('*')
@@ -141,6 +145,8 @@ export async function assignTasksToUser(userId: string): Promise<Task[]> {
 
 export async function assignNewTasksToAllUsers(): Promise<void> {
   try {
+    const supabase = createClient();
+    
     // Get all active users
     const { data: users, error: usersError } = await supabase
       .from('users')
@@ -185,6 +191,7 @@ export async function assignNewTasksToAllUsers(): Promise<void> {
 }
 
 export async function getUserAvailableTasks(userId: string): Promise<Task[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('tasks')
     .select('*')

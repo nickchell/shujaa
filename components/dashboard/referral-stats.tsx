@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -35,10 +35,10 @@ export function ReferralStats() {
   });
   const [referrals, setReferrals] = useState<Referral[]>([]);
 
-  const loadData = async () => {
-    try {
-      if (!user) return;
+  const loadData = useCallback(async () => {
+    if (!user) return;
 
+    try {
       setIsLoading(true);
 
       // Get referral code
@@ -49,13 +49,11 @@ export function ReferralStats() {
         },
       });
 
-      const responseText = await response.text();
-
       if (!response.ok) {
-        throw new Error(`Failed to get referral code: ${responseText}`);
+        throw new Error('Failed to get referral code');
       }
 
-      const data = JSON.parse(responseText);
+      const data = await response.json();
       if (!data.referralCode) {
         throw new Error('No referral code in response');
       }
@@ -87,11 +85,17 @@ export function ReferralStats() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, toast]);
 
   useEffect(() => {
     loadData();
-  }, [user, toast]);
+  }, [loadData]);
+
+  // Refresh data every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, [loadData]);
 
   if (!user) return null;
 
@@ -103,11 +107,9 @@ export function ReferralStats() {
     if (!referralLink) return;
 
     try {
-      // Try using the modern clipboard API first
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(referralLink);
       } else {
-        // Fallback for non-secure contexts or older browsers
         const textArea = document.createElement('textarea');
         textArea.value = referralLink;
         textArea.style.position = 'fixed';
@@ -132,7 +134,6 @@ export function ReferralStats() {
         description: "Your referral link has been copied to clipboard.",
       });
 
-      // Reset the copied state after 2 seconds
       setTimeout(() => {
         setIsCopied(false);
       }, 2000);
