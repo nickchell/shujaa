@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -16,7 +16,6 @@ export default function DashboardPage() {
   
   const [greetingMessage, setGreetingMessage] = useState('');
   
-  // Function to get the greeting message and emoji based on the time of day
   const getGreetingMessage = useCallback(() => {
     const hour = new Date().getHours();
     let greeting = '';
@@ -24,17 +23,17 @@ export default function DashboardPage() {
 
     if (hour < 12) {
       greeting = 'Good morning';
-      emojis = ['☀️', '☀️', '☕']; // Morning emojis
+      emojis = ['☀️', '☀️', '☕'];
     } else if (hour < 18) {
       greeting = 'Good afternoon';
-      emojis = ['🌟', '🚀', '💼']; // Afternoon emojis
+      emojis = ['🌟', '🚀', '💼'];
     } else {
       greeting = 'Good evening';
-      emojis = ['🌙', '🌙', '🌙']; // Evening emojis
+      emojis = ['🌙', '🌙', '🌙'];
     }
 
     const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-    const userName = user?.firstName || 'User'; // Use first name or fallback to 'User'
+    const userName = user?.firstName || 'User';
     return `${greeting}, ${userName}! ${randomEmoji}`;
   }, [user?.firstName]);
 
@@ -42,24 +41,29 @@ export default function DashboardPage() {
     setGreetingMessage(getGreetingMessage());
   }, [getGreetingMessage]);
 
-  const firstNameRaw =
-    user?.firstName ||
-    user?.emailAddresses?.[0]?.emailAddress.split('@')[0].split('.')[0] ||
-    'User';
+  const userProfile = useMemo(() => {
+    const firstNameRaw =
+      user?.firstName ||
+      user?.emailAddresses?.[0]?.emailAddress.split('@')[0].split('.')[0] ||
+      'User';
 
-  const firstName = firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1);
+    const firstName = firstNameRaw.charAt(0).toUpperCase() + firstNameRaw.slice(1);
 
-  const userProfile = {
-    name: firstName,
-    shujaaType: 'Hustler',
-    level: 2,
-    xp: 450,
-    nextLevelXp: 1000,
-    dailyStreak: 5,
-    primaryGoal: 'data',
-  };
+    return {
+      name: firstName,
+      shujaaType: 'Hustler',
+      level: 2,
+      xp: 450,
+      nextLevelXp: 1000,
+      dailyStreak: 5,
+      primaryGoal: 'data',
+    };
+  }, [user?.firstName, user?.emailAddresses]);
 
-  const progress = (userProfile.xp / userProfile.nextLevelXp) * 100;
+  const progress = useMemo(() => 
+    (userProfile.xp / userProfile.nextLevelXp) * 100,
+    [userProfile.xp, userProfile.nextLevelXp]
+  );
 
   return (
     <div className="space-y-8">

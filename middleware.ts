@@ -1,5 +1,6 @@
-import { authMiddleware, type AuthObject } from '@clerk/nextjs';
-import { NextRequest, NextResponse } from 'next/server';
+import { authMiddleware } from '@clerk/nextjs';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 // Define public routes — exact paths only
 const publicRoutes = [

@@ -40,7 +40,6 @@ export default function LoginForm() {
     },
   });
 
-  // Function to handle Google sign-in (Clerk Sign-In)
   async function onGoogleSignIn() {
     if (!signIn) {
       toast({
@@ -53,9 +52,10 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
+      const redirectUrl = `${window.location.origin}/dashboard`;
       const res = await signIn.create({
         strategy: 'oauth_google',
-        redirectUrl: `${window.location.origin}/dashboard`,
+        redirectUrl,
       });
 
       if (res.status === 'complete') {
@@ -65,11 +65,10 @@ export default function LoginForm() {
         });
         router.push('/dashboard');
       } else if (res.status === 'needs_first_factor') {
-        // Handle first factor authentication if needed
         await res.prepareFirstFactor({
           strategy: 'oauth_google',
-          redirectUrl: `${window.location.origin}/dashboard`,
-          actionCompleteRedirectUrl: `${window.location.origin}/dashboard`,
+          redirectUrl,
+          actionCompleteRedirectUrl: redirectUrl,
         });
       } else {
         toast({
