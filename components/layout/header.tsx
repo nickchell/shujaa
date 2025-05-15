@@ -38,7 +38,7 @@ export default function Header() {
         <div className="flex items-center gap-2">
           <Sheet>
             
-            <SheetContent side="left" className="pr-0">
+            <SheetContent side="left" className="pr-0" title="Menu">
               <nav className="grid gap-6 text-lg font-medium">
                 {navItems.map((item) => (
                   <Link

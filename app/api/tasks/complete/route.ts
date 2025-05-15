@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { apiResponse, apiError } from '@/lib/api-utils';
 
 export async function POST(request: Request) {
   try {
@@ -9,10 +9,7 @@ export async function POST(request: Request) {
     if (!taskId || !userId) {
       const error = 'Missing required fields';
       console.error(error, { taskId, userId });
-      return NextResponse.json(
-        { error },
-        { status: 400 }
-      );
+      return apiError(error, 400, { taskId, userId });
     }
 
     // Create a Supabase client with the service role
@@ -30,29 +27,9 @@ export async function POST(request: Request) {
       .eq('user_id', userId)
       .single();
 
-    if (fetchError) {
-      const error = `Error fetching task: ${fetchError.message}`;
-      console.error(error, {
-        code: fetchError.code,
-        message: fetchError.message,
-        details: fetchError.details,
-        hint: fetchError.hint,
-        taskId,
-        userId
-      });
-      return NextResponse.json(
-        { error },
-        { status: 500 }
-      );
-    }
-
-    if (!existingTask) {
-      const error = `Task not found or does not belong to user`;
-      console.error(error, { taskId, userId });
-      return NextResponse.json(
-        { error },
-        { status: 404 }
-      );
+    if (fetchError || !existingTask) {
+      console.error('Task not found or access denied:', { taskId, userId, fetchError });
+      return apiError('Task not found or access denied', 404, { taskId, userId });
     }
 
     // Update the task
@@ -67,29 +44,9 @@ export async function POST(request: Request) {
       .select()
       .single();
 
-    if (updateError) {
-      const error = `Error updating task: ${updateError.message}`;
-      console.error(error, {
-        code: updateError.code,
-        message: updateError.message,
-        details: updateError.details,
-        hint: updateError.hint,
-        taskId,
-        userId
-      });
-      return NextResponse.json(
-        { error },
-        { status: 500 }
-      );
-    }
-
-    if (!updatedTask) {
-      const error = 'No task returned after update';
-      console.error(error, { taskId, userId });
-      return NextResponse.json(
-        { error },
-        { status: 500 }
-      );
+    if (updateError || !updatedTask) {
+      console.error('Error updating task:', updateError);
+      return apiError('Failed to update task', 500, updateError?.message);
     }
 
     console.log('Task updated successfully:', {
@@ -98,16 +55,61 @@ export async function POST(request: Request) {
       userId: updatedTask.user_id,
       isCompleted: updatedTask.is_completed
     });
-    return NextResponse.json({ task: updatedTask });
+    
+    // Update user's points if the task has a reward
+    if (updatedTask.reward && updatedTask.reward > 0) {
+      try {
+        // Get current points
+        const { data: userData, error: userError } = await supabaseAdmin
+          .from('users')
+          .select('points')
+          .eq('id', userId)
+          .single();
+          
+        if (userError) throw userError;
+        
+        const currentPoints = userData?.points || 0;
+        const newPoints = currentPoints + updatedTask.reward;
+        
+        // Update points
+        const { error: updateError } = await supabaseAdmin
+          .from('users')
+          .update({ points: newPoints })
+          .eq('id', userId);
+          
+        if (updateError) throw updateError;
+        
+        return apiResponse({
+          success: true,
+          message: 'Task completed successfully',
+          task: updatedTask,
+          pointsAwarded: updatedTask.reward,
+          newPoints
+        });
+      } catch (pointsError) {
+        console.error('Error updating user points:', pointsError);
+        // Continue with the response even if points update fails
+      }
+    }
+    
+    return apiResponse({
+      success: true,
+      message: 'Task completed successfully',
+      task: updatedTask
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     console.error('Error in task completion:', {
       error: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: errorStack
     });
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
+    
+    return apiError(
+      'Failed to complete task',
+      500,
+      errorMessage
     );
   }
 } 

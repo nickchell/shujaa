@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -17,16 +17,52 @@ import HeroSection from '@/components/home/hero-section';
 import StatsSection from '@/components/home/stats-section';
 import TestimonialsSection from '@/components/home/testimonials-section';
 import { useUser } from '@clerk/nextjs';
+import { checkHomepageStatus } from './home-helper';
 
 export default function Home() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
   const router = useRouter();
+  const [isReady, setIsReady] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isSignedIn) {
+    // Set ready state to true to ensure we're client-side
+    setIsReady(true);
+    
+    // Check homepage status for debugging
+    const checkStatus = async () => {
+      try {
+        const status = await checkHomepageStatus();
+        if (!status.success) {
+          setDebugInfo(`Error checking homepage: ${status.error}`);
+        } else {
+          console.log('Homepage status:', status.message);
+        }
+      } catch (error) {
+        console.error('Failed to check homepage status:', error);
+      }
+    };
+    
+    checkStatus();
+    
+    // Redirect to dashboard if user is already signed in
+    if (isLoaded && isSignedIn) {
       router.push('/dashboard');
     }
-  }, [isSignedIn, router]);
+  }, [isSignedIn, isLoaded, router]);
+
+  // If not ready yet, show a minimal loading state
+  if (!isReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Loading Rafiki Rewards...</h1>
+          <div className="mt-4 animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          {debugInfo && <div className="mt-4 text-sm text-red-500">{debugInfo}</div>}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">

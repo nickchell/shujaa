@@ -1,15 +1,26 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
-import { createClient } from '@/lib/supabase/server';
-import { checkReferralCode, createReferral } from '@/lib/supabase/referrals';
+import { NextResponse } from 'next/server';
+import { saveUserToSupabase } from '@/lib/supabase/save-user';
 
+/**
+ * Webhook handler for Clerk authentication events
+ * Ensures user data is properly saved to Supabase when users sign up
+ * Uses the saveUserToSupabase function to align with the schema
+ */
 export async function POST(req: Request) {
-  // Get the headers
-  const headerPayload = await headers();
-  const svix_id = headerPayload.get('svix-id');
-  const svix_timestamp = headerPayload.get('svix-timestamp');
-  const svix_signature = headerPayload.get('svix-signature');
+  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
+
+  if (!WEBHOOK_SECRET) {
+    throw new Error('Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local');
+  }
+
+  // Get the headers correctly based on the app's typing
+  const headerData = await headers();
+  const svix_id = headerData.get('svix-id');
+  const svix_timestamp = headerData.get('svix-timestamp');
+  const svix_signature = headerData.get('svix-signature');
 
   // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
@@ -22,8 +33,8 @@ export async function POST(req: Request) {
   const payload = await req.json();
   const body = JSON.stringify(payload);
 
-  // Create a new Svix instance with your webhook secret
-  const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET || '');
+  // Create a new Svix instance with your secret.
+  const wh = new Webhook(WEBHOOK_SECRET);
 
   let evt: WebhookEvent;
 
@@ -41,108 +52,94 @@ export async function POST(req: Request) {
     });
   }
 
-  // Handle the webhook
+  // Handle the webhook events
   const eventType = evt.type;
+  console.log(`Received webhook event: ${eventType}`);
 
   if (eventType === 'user.created') {
-    const { id, email_addresses, ...attributes } = evt.data;
+    const { id, email_addresses, first_name, last_name, image_url, unsafe_metadata } = evt.data;
     const email = email_addresses?.[0]?.email_address;
-
-    if (!id || !email) {
-      console.error('Missing user id or email:', { id, email });
-      return new Response('Missing user id or email', { status: 400 });
+    
+    if (!id) {
+      return new Response('Error: No user ID provided', { status: 400 });
     }
-
-    // Get referral code from URL if present, otherwise check cookies
-    const url = new URL(req.url);
-    let referralCode = url.searchParams.get('ref');
-    const cookieHeader = req.headers.get('cookie');
-    if (!referralCode && cookieHeader) {
-      const cookies = cookieHeader.split(';').map(c => c.trim());
-      const refCookie = cookies.find(c => c.startsWith('referral_code='));
-      if (refCookie) {
-        referralCode = refCookie.split('=')[1];
-      }
-    }
-
-    // Generate a unique referral code
-    const generatedCode = `shuj-${id.substring(0, 4)}${Math.floor(Math.random() * 10000)}`;
 
     try {
-      // Create user in Supabase with the generated referral code
-      const supabase = createClient();
+      console.log(`Creating user in Supabase with ID: ${id}`);
+      console.log('User metadata:', unsafe_metadata);
       
-      // First check if user already exists
-      const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', id)
-        .single();
+      // Get the referral code from the user's metadata if it exists
+      const referredBy = unsafe_metadata?.referredBy as string | undefined;
+      
+      // Save the user to Supabase using our utility function
+      const result = await saveUserToSupabase({
+        userId: id,
+        email: email || '',
+        firstName: first_name || '',
+        lastName: last_name || '',
+        fullName: `${first_name || ''} ${last_name || ''}`.trim(),
+        imageUrl: image_url || '',
+        referredBy: referredBy
+      });
 
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-        console.error('Error checking existing user:', checkError);
-        return new Response(`Error checking existing user: ${checkError.message}`, {
-          status: 500
-        });
-      }
-
-      if (existingUser) {
-        console.log('User already exists in Supabase:', id);
-        return new Response('User already exists', { status: 200 });
-      }
-
-      // Create new user
-      const { error: userError } = await supabase
-        .from('users')
-        .insert({
-          id,
-          email,
-          ...attributes,
-          referral_code: generatedCode,
-          referred_by: referralCode
-        });
-
-      if (userError) {
-        console.error('Error creating user in Supabase:', userError);
-        return new Response(`Error creating user: ${userError.message}`, {
-          status: 500
-        });
-      }
-
-      // Initialize referral stats with zeros
-      const { error: statsError } = await supabase
-        .from('referral_stats')
-        .insert({
-          user_id: id,
-          total_referrals: 0,
-          completed_referrals: 0,
-          pending_referrals: 0,
-          total_rewards: 0
-        });
-
-      if (statsError) {
-        console.error('Error initializing referral stats:', statsError);
-        return new Response(`Error initializing referral stats: ${statsError.message}`, {
-          status: 500
-        });
-      }
-
-      if (referralCode) {
-        // Check if referral code is valid
-        const referrerId = await checkReferralCode(referralCode);
-        
-        if (referrerId) {
-          // Create referral record
-          await createReferral(referrerId, id);
-        }
-      }
-
-      return new Response('User created successfully', { status: 200 });
+      console.log('User successfully saved to Supabase:', result);
+      return NextResponse.json({ 
+        message: result.message, 
+        data: result.user 
+      });
     } catch (error) {
-      console.error('Unexpected error in webhook handler:', error);
-      return new Response('Internal server error', { status: 500 });
+      console.error('Error in webhook handler:', error);
+      return new Response(`Error processing webhook: ${error instanceof Error ? error.message : 'Unknown error'}`, 
+        { status: 500 });
     }
   }
 
-  return new Response('', { status: 200 });
+  // Handle user updates
+  if (eventType === 'user.updated') {
+    const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+    const email = email_addresses?.[0]?.email_address;
+    
+    if (!id) {
+      return new Response('Error: No user ID provided', { status: 400 });
+    }
+
+    try {
+      console.log(`Updating user in Supabase with ID: ${id}`);
+      
+      // We'll use createClient directly for updates
+      const { createClient } = await import('@/lib/supabase/server');
+      const supabase = createClient();
+      
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          email: email || undefined,
+          first_name: first_name || undefined,
+          last_name: last_name || undefined,
+          full_name: (first_name || last_name) ? `${first_name || ''} ${last_name || ''}`.trim() : undefined,
+          avatar_url: image_url || undefined,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select();
+
+      if (error) {
+        console.error('Error updating user in Supabase:', error);
+        return new Response(`Error updating user in Supabase: ${error.message}`, { status: 500 });
+      }
+
+      console.log('User successfully updated in Supabase:', data);
+      return NextResponse.json({ 
+        message: 'User updated successfully', 
+        data: data 
+      });
+    } catch (error) {
+      console.error('Error in webhook handler:', error);
+      return new Response(`Error processing webhook: ${error instanceof Error ? error.message : 'Unknown error'}`, 
+        { status: 500 });
+    }
+  }
+
+  // Return a generic success response for other event types
+  return new Response('Webhook processed successfully', { status: 200 });
 } 

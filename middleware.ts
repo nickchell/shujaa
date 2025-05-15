@@ -1,41 +1,109 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { authMiddleware } from '@clerk/nextjs';
+import { validateEnv } from '@/lib/env';
+import { headers } from 'next/headers';
 
-// Define public routes — exact paths only
-const publicRoutes = [
-  '/', // Home page
-  '/about', // About page
-  '/login', // Login page
-  '/login/callback', // Callback after login
-  '/signup', // Signup page
-  '/signup/callback', // Callback after signup
-  '/api/webhook', // Webhook endpoint
-  '/favicon.ico', // Favicon
-  '/_next/static', // Next.js static files
-  '/_next/image', // Next.js image files
-  '/images', // Images folder
-  '/assets', // Assets folder
-  '/api/trpc',
-  '/_next',
-  '/site.webmanifest',
-  '/robots.txt',
-  '/sitemap.xml',
-  '/fonts',
-];
+// Add a global type declaration for our environment validation flag
+declare global {
+  var envValidated: boolean;
+}
 
-export default clerkMiddleware((auth, req: NextRequest) => {
-  const url = new URL(req.url);
-  // Capture referral code from URL and store in cookie if present
-  const ref = url.searchParams.get('ref');
-  if (ref) {
-    const response = NextResponse.next();
-    response.cookies.set('referral_code', ref, { path: '/', maxAge: 60 * 60 * 24 * 7 }); // 7 days
-    return response;
+// Middleware that validates environment variables before serving requests
+async function envMiddleware() {
+  // Only check once during startup - don't repeatedly validate env vars on every request
+  if (global.envValidated !== true) {
+    try {
+      const isValid = validateEnv();
+      global.envValidated = isValid;
+      
+      // In development, don't block requests if env vars are missing
+      if (!isValid && process.env.NODE_ENV === 'production') {
+        console.error('Application environment is not properly configured');
+        return new NextResponse(
+          JSON.stringify({
+            error: 'Server configuration error',
+            message: 'The application is not properly configured. Please check server logs.'
+          }),
+          {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error validating environment:', error);
+      // Continue anyway to avoid blocking the app
+    }
   }
+  
   return NextResponse.next();
+}
+
+// Configure CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS method for CORS preflight
+async function handleOptions() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      ...corsHeaders,
+    },
+  });
+}
+
+// This example protects all routes including api/trpc routes
+// Please edit this to allow other routes to be public as needed.
+// See https://clerk.com/docs/references/nextjs/auth-middleware for more information about configuring your middleware
+export default authMiddleware({
+  beforeAuth: (req) => {
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+      return handleOptions();
+    }
+    
+    // Process env validation
+    return envMiddleware();
+  },
+  publicRoutes: [
+    '/',
+    '/login',
+    '/login/[[...sign-in]]',
+    '/login/sso-callback',
+    '/login/sso-callback/:path*',
+    '/api/tasks/:path*',
+    '/sign-in',
+    '/signup',
+    '/sign-up',
+    '/welcome',
+    '/api/webhooks/clerk',
+    '/api/webhook/clerk',
+    '/api/users/check',
+    '/api/referrals/code',
+    '/api/referrals/validate',
+    '/api/referrals/create',
+    '/api/referrals/status',
+    '/api/referrals/migrate-codes',
+    '/api/info',
+  ],
+  ignoredRoutes: [
+    '/_next',
+    '/_next/static',
+    '/_next/image',
+    '/_next/webpack-hmr',
+    '/favicon.ico',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/manifest.json',
+    '/.well-known',
+  ],
+  debug: process.env.NODE_ENV === 'development',
 });
 
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
-};
+}; 

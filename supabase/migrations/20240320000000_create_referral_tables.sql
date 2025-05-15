@@ -25,8 +25,8 @@ CREATE INDEX idx_users_referral_code ON users(referral_code);
 CREATE OR REPLACE FUNCTION generate_referral_code()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Generate a random 6-character alphanumeric code
-  NEW.referral_code := upper(substring(md5(random()::text) from 1 for 6));
+  -- Generate a random code with rafiki prefix
+  NEW.referral_code := 'rafiki-' || substring(md5(random()::text) from 1 for 8);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

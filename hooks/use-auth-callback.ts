@@ -29,12 +29,6 @@ export function useAuthCallback() {
     }
 
     try {
-      // Get the Clerk token for Supabase
-      const token = await getToken({ template: 'supabase' });
-      if (!token) {
-        throw new Error('Failed to get Supabase token');
-      }
-
       // Get the primary email address
       const primaryEmail = user.emailAddresses.find(email => email.id === user.primaryEmailAddressId);
       console.log('Found primary email:', primaryEmail);
@@ -49,9 +43,10 @@ export function useAuthCallback() {
 
       console.log('Prepared user data for Supabase:', userData);
       
-      const result = await saveUserToSupabase(userData, token);
-      console.log('Successfully saved user data to Supabase:', result);
-      return result;
+      // Save user to Supabase
+      await saveUserToSupabase(userData);
+      console.log('Successfully saved user to Supabase');
+      return true;
     } catch (error) {
       console.error('Failed to save user data:', error);
       return Promise.reject(error);

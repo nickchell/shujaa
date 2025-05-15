@@ -1,14 +1,7 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+'server-only';
 
-export function createClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    }
-  );
-} 
+// Re-export from the new location in the app directory
+export { createServerClient, createAdminClient } from '@/app/lib/supabase/server-utils';
+
+// Re-export types
+export type { Database } from '@/types/supabase';

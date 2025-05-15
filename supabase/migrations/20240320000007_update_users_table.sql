@@ -80,7 +80,7 @@ CREATE OR REPLACE FUNCTION public.generate_referral_code()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.referral_code IS NULL THEN
-        NEW.referral_code := 'shuj-' || substr(NEW.id, 1, 4) || floor(random() * 10000)::text;
+        NEW.referral_code := 'rafiki-' || substring(md5(random()::text), 1, 8);
     END IF;
     RETURN NEW;
 END;

@@ -1,27 +1,61 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
+type Database = any; // Replace with your actual database types if available
+
+// Global variable to hold the singleton instance
+declare global {
+  // eslint-disable-next-line no-var
+  var __supabaseClient: ReturnType<typeof createSupabaseClient> | undefined;
 }
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY');
-}
-
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    },
-    db: {
-      schema: 'public'
-    }
+/**
+ * Creates a new Supabase client instance with proper configuration
+ */
+function createSupabaseClientInstance() {
+  if (!env.supabase.url || !env.supabase.anonKey) {
+    throw new Error('Missing required Supabase configuration. Please check your environment variables.');
   }
-);
+  
+  return createSupabaseClient(
+    env.supabase.url,
+    env.supabase.anonKey,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    }
+  );
+}
+
+/**
+ * Returns the singleton Supabase client instance
+ * Creates a new instance if one doesn't exist
+ */
+function getSupabaseClient() {
+  // In development, use a global variable to persist the client across hot-reloads
+  if (process.env.NODE_ENV === 'development') {
+    if (!global.__supabaseClient) {
+      global.__supabaseClient = createSupabaseClientInstance();
+    }
+    return global.__supabaseClient;
+  }
+  
+  // In production, create a new instance each time
+  return createSupabaseClientInstance();
+}
+
+// Create and export the singleton instance
+const supabase = getSupabaseClient();
+
+export { supabase, getSupabaseClient };
+
+// Check if Supabase is properly configured
+export const isSupabaseConfigured = (): boolean => {
+  return !!(env.supabase.url && env.supabase.anonKey);
+};
 
 // Test the connection
 (async () => {

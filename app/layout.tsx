@@ -1,11 +1,9 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
-import Footer from '@/components/layout/footer';
-import Navbar from '@/components/layout/header'; // Import the Navbar component
-import { ClerkProvider } from '@clerk/nextjs'; // Import ClerkProvider
+import { ClerkProvider } from '@clerk/nextjs';
+import { RootLayoutClient } from '@/components/layout/root-layout-client';
+import { ConfigInitializer } from '@/components/config-initializer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -14,7 +12,7 @@ export const metadata: Metadata = {
   description: 'Earn free Safaricom data bundles by referring friends and completing simple tasks',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -32,22 +30,16 @@ export default function RootLayout({
             'rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500',
         },
       }}
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      afterSignInUrl="/dashboard"
+      afterSignUpUrl="/dashboard"
     >
       <html lang="en" suppressHydrationWarning>
-        <body className="min-h-screen bg-background font-sans antialiased">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <div className="relative flex min-h-screen flex-col">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
-          </ThemeProvider>
+        <body className={`min-h-screen bg-background font-sans antialiased ${inter.className}`}>
+          <div className="flex min-h-screen flex-col">
+            <ConfigInitializer />
+            <RootLayoutClient>{children}</RootLayoutClient>
+          </div>
         </body>
       </html>
     </ClerkProvider>

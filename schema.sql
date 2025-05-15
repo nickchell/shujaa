@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   full_name TEXT,
   email TEXT UNIQUE,
   referral_code TEXT UNIQUE,
-  referred_by TEXT REFERENCES users(id),
+  referred_by TEXT REFERENCES users(referral_code),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -38,7 +38,19 @@ CREATE OR REPLACE FUNCTION generate_referral_code()
 RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.referral_code IS NULL THEN
-    NEW.referral_code := 'shuj-' || substr(NEW.id, 1, 4) || floor(random() * 10000)::text;
+    -- Explicitly ensure 'rafiki-' prefix is used
+    NEW.referral_code := 'rafiki-' || substring(md5(random()::text), 1, 8);
+  ELSE
+    -- Check if code doesn't have 'rafiki-' prefix and fix it if needed
+    IF NEW.referral_code NOT LIKE 'rafiki-%' THEN
+      -- If it has a different prefix like 'shuj-', replace it
+      IF NEW.referral_code LIKE '%-' || substring(NEW.referral_code FROM position('-' in NEW.referral_code) + 1) THEN
+        NEW.referral_code := 'rafiki-' || substring(NEW.referral_code FROM position('-' in NEW.referral_code) + 1);
+      ELSE
+        -- If no prefix, add one
+        NEW.referral_code := 'rafiki-' || NEW.referral_code;
+      END IF;
+    END IF;
   END IF;
   RETURN NEW;
 END;

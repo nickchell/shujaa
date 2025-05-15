@@ -1,0 +1,33 @@
+@keyframes flame {
+  0% { box-shadow: 0 0 5px #ff6b6b, 0 0 10px #ff6b6b, 0 0 15px #ff4757; }
+  50% { box-shadow: 0 0 10px #ff6b6b, 0 0 20px #ff6b6b, 0 0 30px #ff4757; }
+  100% { box-shadow: 0 0 5px #ff6b6b, 0 0 10px #ff6b6b, 0 0 15px #ff4757; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+.flame-effect {
+  animation: flame 1.5s infinite, shake 0.5s infinite;
+  transition: all 0.3s ease;
+}
+
+.flame-effect:focus {
+  animation: none;
+  box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary);
+}
+
+.saved-number {
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: inline-block;
+}

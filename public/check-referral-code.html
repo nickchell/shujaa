@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Check Referral Code</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .container { margin-top: 20px; }
+    pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    .result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Check Referral Code</h1>
+  
+  <div>
+    <label for="supabaseUrl">Supabase URL:</label><br>
+    <input type="text" id="supabaseUrl" style="width: 100%; margin-bottom: 10px;" 
+           placeholder="https://your-project-ref.supabase.co">
+  </div>
+  
+  <div>
+    <label for="anonKey">Anon/Public Key:</label><br>
+    <input type="text" id="anonKey" style="width: 100%; margin-bottom: 10px;" 
+           placeholder="your-anon-key">
+  </div>
+  
+  <div>
+    <label for="referralCode">Referral Code:</label><br>
+    <input type="text" id="referralCode" style="width: 100%; margin-bottom: 10px;" 
+           value="rafiki-ntrx939v">
+  </div>
+  
+  <button onclick="checkCode()" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+    Check Code
+  </button>
+  
+  <div id="result" class="result" style="margin-top: 20px; display: none;">
+    <h3>Results:</h3>
+    <pre id="output"></pre>
+  </div>
+  
+  <script>
+    function log(message) {
+      const output = document.getElementById('output');
+      output.textContent += message + '\n';
+      console.log(message);
+    }
+    
+    async function checkCode() {
+      const supabaseUrl = document.getElementById('supabaseUrl').value.trim();
+      const anonKey = document.getElementById('anonKey').value.trim();
+      const referralCode = document.getElementById('referralCode').value.trim();
+      
+      if (!supabaseUrl || !anonKey) {
+        alert('Please provide Supabase URL and Anon Key');
+        return;
+      }
+      
+      document.getElementById('result').style.display = 'block';
+      const output = document.getElementById('output');
+      output.textContent = '';
+      
+      // Initialize Supabase
+      const supabase = supabase.createClient(supabaseUrl, anonKey);
+      
+      try {
+        log(`Checking referral code: ${referralCode}`);
+        
+        // Try exact match
+        log('\nTrying exact match...');
+        const { data: exactMatch, error: exactError } = await supabase
+          .from('users')
+          .select('id, email, first_name, last_name, referral_code')
+          .eq('referral_code', referralCode)
+          .maybeSingle();
+          
+        log(`Exact match result: ${JSON.stringify({ data: exactMatch, error: exactError }, null, 2)}`);
+        
+        // Try case-insensitive match
+        log('\nTrying case-insensitive match...');
+        const { data: ciMatch, error: ciError } = await supabase
+          .from('users')
+          .select('id, email, first_name, last_name, referral_code')
+          .ilike('referral_code', referralCode)
+          .maybeSingle();
+          
+        log(`Case-insensitive match result: ${JSON.stringify({ data: ciMatch, error: ciError }, null, 2)}`);
+        
+        // Try with just the code part (without prefix)
+        const codeWithoutPrefix = referralCode.includes('-') ? referralCode.split('-')[1] : referralCode;
+        log(`\nTrying with code part only: ${codeWithoutPrefix}`);
+        
+        const { data: partialMatch, error: partialError } = await supabase
+          .from('users')
+          .select('id, email, first_name, last_name, referral_code')
+          .or(`referral_code.eq.${codeWithoutPrefix},referral_code.ilike.%${codeWithoutPrefix}%`)
+          .maybeSingle();
+          
+        log(`Partial match result: ${JSON.stringify({ data: partialMatch, error: partialError }, null, 2)}`);
+        
+        // List all referral codes in the database for debugging
+        log('\nListing all referral codes in the database...');
+        const { data: allCodes, error: allCodesError } = await supabase
+          .from('users')
+          .select('referral_code')
+          .not('referral_code', 'is', null);
+          
+        log(`All referral codes in database: ${JSON.stringify(allCodes?.map(u => u.referral_code), null, 2)}`);
+        
+      } catch (error) {
+        log(`Error: ${error.message}`);
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>

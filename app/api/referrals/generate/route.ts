@@ -1,6 +1,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
-import { createClient } from '@/lib/supabase/client';
+import { createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { config } from '@/lib/config';
 
 export async function POST() {
   try {
@@ -9,7 +10,12 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = createClient();
+    const supabase = createAdminClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
+    }
+    
+    const prefix = config.referralCodePrefix;
 
     // First try to get the user
     const { data: existingUser, error: fetchError } = await supabase
@@ -28,7 +34,7 @@ export async function POST() {
     }
 
     // Generate a referral code
-    const referralCode = `shuj-${userId.slice(0, 4)}${Math.floor(Math.random() * 10000)}`;
+    const referralCode = `${prefix}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // If user exists but no referral code, update it
     if (existingUser && !existingUser.referral_code) {
