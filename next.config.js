@@ -10,9 +10,9 @@ const nextConfig = {
     },
   },
   // Ensure CSS optimization is enabled
-  optimizeCss: true,
+  // optimizeCss: true,
   // Speed up production builds
-  swcMinify: true,
+  // swcMinify: true,
 };
 
 module.exports = nextConfig;
